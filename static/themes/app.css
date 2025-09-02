@@ -1,0 +1,111 @@
+/* Глобальные CSS переменные для темы по умолчанию */
+:root {
+    /* Catppuccin Mocha colors as default */
+    --ctp-base: #1e1e2e;
+    --ctp-mantle: #181825;
+    --ctp-crust: #11111b;
+    --ctp-text: #cdd6f4;
+    --ctp-subtext1: #bac2de;
+    --ctp-subtext0: #a6adc8;
+    --ctp-overlay2: #9399b2;
+    --ctp-overlay1: #7f849c;
+    --ctp-overlay0: #6c7086;
+    --ctp-surface2: #585b70;
+    --ctp-surface1: #45475a;
+    --ctp-surface0: #313244;
+    --ctp-blue: #89b4fa;
+    --ctp-lavender: #b4befe;
+    --ctp-sapphire: #74c7ec;
+    --ctp-sky: #89dceb;
+    --ctp-teal: #94e2d5;
+    --ctp-green: #a6e3a1;
+    --ctp-yellow: #f9e2af;
+    --ctp-peach: #fab387;
+    --ctp-maroon: #eba0ac;
+    --ctp-red: #f38ba8;
+    --ctp-mauve: #cba6f7;
+    --ctp-pink: #f5c2e7;
+    --ctp-flamingo: #f2cdcd;
+    --ctp-rosewater: #f5e0dc;
+}
+
+/* Применяем шрифты и базовые стили ко всему приложению */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    color: var(--ctp-text);
+    background-color: var(--ctp-base);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Базовые стили для иконок */
+.icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    transition: filter 0.3s ease;
+}
+
+html[data-theme="latte"] .icon {
+    filter: invert(0) brightness(0.8);
+}
+
+html[data-theme="frappe"] .icon,
+html[data-theme="macchiato"] .icon,
+html[data-theme="mocha"] .icon {
+    filter: invert(1) brightness(1.2);
+}
+
+/* Специфичные стили для кнопок с иконками */
+.settings-btn .icon,
+.toggle-btn .icon,
+.refresh-btn .icon {
+    filter: inherit; /* Наследуем фильтр от родителя */
+}
+
+/* Дополнительные корректировки для specific иконок */
+html[data-theme="latte"] .settings-btn .icon,
+html[data-theme="latte"] .toggle-btn .icon,
+html[data-theme="latte"] .refresh-btn .icon {
+    filter: invert(1) brightness(0.9);
+}
+
+/* Стили для спиннера загрузки */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+html[data-theme="latte"] .spinner {
+    border-top: 2px solid var(--ctp-text);
+}
+
+html[data-theme="frappe"] .spinner,
+html[data-theme="macchiato"] .spinner,
+html[data-theme="mocha"] .spinner {
+    border-top: 2px solid var(--ctp-text);
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
