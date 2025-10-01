@@ -261,7 +261,7 @@
                     <div class="add-card" on:click={openAddModal}>
                         <div class="add-card-content">
                             <div class="add-icon">
-                                <img src={AddIcon} alt="Добавить" />
+                                <img src={AddIcon} alt="Добавить" class="icon"/>
                             </div>
                             <span class="add-text">Добавить пароль</span>
                         </div>

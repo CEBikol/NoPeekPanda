@@ -238,7 +238,11 @@
                         class="settings-btn"
                         title="Настройки"
                     >
-                        <img src={SettingsIcon} alt="Настройки" class="icon" />
+                        <img 
+                            src={SettingsIcon} 
+                            alt="Настройки" 
+                            class="icon"
+                         />
                     </button>
                 </div>
             </div>
@@ -384,8 +388,6 @@
         box-shadow: 0 6px 16px color-mix(in srgb, var(--ctp-crust) 30%, transparent);
         transform: translateX(-50%) scale(1.02);
     }
-
-    
 
     .card {
         background-color: var(--ctp-mantle);
@@ -587,17 +589,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--ctp-text);
     }
 
     .toggle-btn:hover {
         color: var(--ctp-blue);
-    }
-
-    .icon {
-        width: 20px;
-        height: 20px;
-        object-fit: contain;
     }
 
     .action-btn {
@@ -618,14 +613,6 @@
         background-color: var(--ctp-lavender);
     }
 
-    .error {
-        color: var(--ctp-red);
-        padding: 0.8rem;
-        border-radius: 8px;
-        background-color: rgba(243, 139, 168, 0.1);
-        font-size: 0.9rem;
-    }
-
     .logos {
         position: absolute;
         bottom: 0.5rem;
@@ -634,6 +621,11 @@
         gap: 0.5rem;
         opacity: 0.7;
         transition: opacity 0.3s ease;
+    }
+    .icon {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
     }
 
 </style>

@@ -68,20 +68,6 @@ html[data-theme="mocha"] .icon {
     filter: invert(1) brightness(1.2);
 }
 
-/* Специфичные стили для кнопок с иконками */
-.settings-btn .icon,
-.toggle-btn .icon,
-.refresh-btn .icon {
-    filter: inherit; /* Наследуем фильтр от родителя */
-}
-
-/* Дополнительные корректировки для specific иконок */
-html[data-theme="latte"] .settings-btn .icon,
-html[data-theme="latte"] .toggle-btn .icon,
-html[data-theme="latte"] .refresh-btn .icon {
-    filter: invert(1) brightness(0.9);
-}
-
 /* Стили для спиннера загрузки */
 .spinner {
     width: 16px;
@@ -89,16 +75,6 @@ html[data-theme="latte"] .refresh-btn .icon {
     border: 2px solid transparent;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-}
-
-html[data-theme="latte"] .spinner {
-    border-top: 2px solid var(--ctp-text);
-}
-
-html[data-theme="frappe"] .spinner,
-html[data-theme="macchiato"] .spinner,
-html[data-theme="mocha"] .spinner {
-    border-top: 2px solid var(--ctp-text);
 }
 
 @keyframes spin {
