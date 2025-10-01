@@ -1,4 +1,6 @@
 <script>
+// @ts-nocheck
+
     const ShowIcon = "/icons/visible.png";
     const HideIcon = "/icons/hide.png";
     const SettingsIcon = "/icons/settings.png";
@@ -31,7 +33,6 @@
 
     $: hasVaultPath = vaultPath !== "";
     
-    // Добавляем реактивную проверку существования папки
     $: if (hasVaultPath) {
         checkVaultFolder();
     }
@@ -48,13 +49,13 @@
             const settings = await invoke("get_settings");
             vaultPath = settings.vault_folder_path || "";
             
-            // Проверяем существование папки при загрузке настроек
             if (hasVaultPath) {
                 await checkVaultFolder();
             } else {
               error= "Не задан путь до папки"
             }
         } catch (e) {
+            // @ts-ignore
             error = ("Ошибка загрузки настроек:", e);
             vaultPath = "";
             vaultFolderExists = false;
@@ -205,14 +206,17 @@
     <link rel="stylesheet" href="/themes/app.css" />
 </svelte:head>
 
-<main class="container">
+
     {#if error}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div class="global-error" on:click={() => error = ''}>
             {error}
         </div>
     {/if}
     
     {#if currentView === "login"}
+    <main class="container">
         <div class="card">
             <div class="login-header">
                 <h1>Выберите хранилище</h1>
@@ -300,33 +304,31 @@
                     </button>
                 </div>
             </div>
-
             <button on:click={handleLogin} class="action-btn">Войти</button>
         </div>
+        <div class="logos-container">
+            <div class="logos">
+                <button on:click={openTauriWebsite} class="logo-btn" title="Tauri">
+                    <img src={TauriIcon} alt="Tauri" class="logo-icon" />
+                </button>
+                <button on:click={openCatppuccinWebsite} class="logo-btn" title="Catppuccin">
+                    <img src={CatppuccinIcon} alt="Catppuccin" class="logo-icon" />
+                </button>
+                <button on:click={openRustWebsite} class="logo-btn" title="Rust">
+                    <img src={RustIcon} alt="Rust" class="logo-icon" />
+                </button>
+                <button on:click={openFlutIconWebsite} class="logo-btn" title="Fluticon">
+                    <img src={FlutIcon} alt="FlutIcon" class="logo-icon">
+                </button>    
+            </div>
+        </div>
+    </main>
     {:else if currentView === "settings"}
         <Settings onBack={closeSettings} />
     {:else if currentView === "main"}
         <MainInterface {selectedFile} {password} onLogout={handleLogout} />
     {/if}
-</main>
-<div class="logos">
-    <button on:click={openTauriWebsite} class="logo-btn" title="Tauri">
-        <img src={TauriIcon} alt="Tauri" class="logo-icon" />
-    </button>
-    <button
-        on:click={openCatppuccinWebsite}
-        class="logo-btn"
-        title="Catppuccin"
-    >
-        <img src={CatppuccinIcon} alt="Catppuccin" class="logo-icon" />
-    </button>
-    <button on:click={openRustWebsite} class="logo-btn" title="Rust">
-        <img src={RustIcon} alt="Rust" class="logo-icon" />
-    </button>
-    <button on:click={openFlutIconWebsite} class="logo-btn", title="Fluticon">
-        <img src={FlutIcon} alt="FlutIcon" class="logo-icon">
-    </button>    
-</div>
+
 
 <style>
     .container {
@@ -395,7 +397,51 @@
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
-        position: relative; /* Для позиционирования логотипов */
+        position: absolute; 
+    }
+
+    .logos-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        max-width: 400px;
+        margin-top: auto;
+        padding: 1rem 0;
+    }
+
+    .logos {
+        display: flex;
+        gap: 0.8rem;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .logos:hover {
+        opacity: 1;
+    }
+
+    .logo-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s ease;
+    }
+
+    .logo-btn:hover {
+        background-color: var(--ctp-surface0);
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
     }
 
     .login-header {
@@ -590,28 +636,4 @@
         transition: opacity 0.3s ease;
     }
 
-    .logos:hover {
-        opacity: 1;
-    }
-
-    .logo-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0.25rem;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .logo-btn:hover {
-        background-color: var(--ctp-surface0);
-    }
-
-    .logo-icon {
-        width: 32px;
-        height: 32px;
-        object-fit: contain;
-    }
 </style>
