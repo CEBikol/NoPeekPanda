@@ -28,6 +28,12 @@
     let isLoading = false;
     let vaultPath = "";
     let isVaultOpen = false;
+    // Состояние модального окна создания хранилища
+    let showCreateVaultModal = false;
+    let newVaultName = "";
+    let newVaultPassword = "";
+    let showNewVaultPassword = false;
+    let isCreatingVault = false;
 
     let vaultFolderExists = false;
 
@@ -159,31 +165,59 @@
         }
     }
 
-    async function createNewVault() {
-        try {
-            const newVaultName = prompt("Введите имя нового хранилища:");
-            if (!newVaultName) return;
-            
-            const newPassword = prompt("Введите пароль для нового хранилища:", "");
-            if (!newPassword) return;
-            
-            await invoke("create_vault", {
-                storageName: newVaultName,
-                password: newPassword
-            });
-            
-            await loadVaultFiles();
-            selectedFile = newVaultName;
-            error = "";
-        } catch (e) {
-            if (e.includes("Storage with this name already exists")) {
-                error = "Хранилище с таким именем уже существует";
-            } else {
-                error = "Не удалось создать хранилище";
-            }
-            console.error("Ошибка создания хранилища:", e);
-        }
+    function openCreateVaultModal() {
+    if (!hasVaultPath) return;
+    showCreateVaultModal = true;
+    newVaultName = "";
+    newVaultPassword = "";
+    showNewVaultPassword = false;
+    error = "";
+}
+
+function closeCreateVaultModal() {
+    showCreateVaultModal = false;
+    newVaultName = "";
+    newVaultPassword = "";
+    showNewVaultPassword = false;
+    error = "";
+}
+
+async function handleCreateVault() {
+    if (!newVaultName.trim()) {
+        error = "Введите имя хранилища";
+        return;
     }
+    if (!newVaultPassword) {
+        error = "Введите пароль";
+        return;
+    }
+
+    try {
+        isCreatingVault = true;
+        await invoke("create_vault", {
+            storageName: newVaultName.trim(),
+            password: newVaultPassword
+        });
+
+        await loadVaultFiles();
+        selectedFile = newVaultName.trim();
+        closeCreateVaultModal();
+        error = "";
+    } catch (e) {
+        console.error("Ошибка создания хранилища:", e);
+        if (e.includes("Storage with this name already exists")) {
+            error = "Хранилище с таким именем уже существует";
+        } else {
+            error = "Не удалось создать хранилище";
+        }
+    } finally {
+        isCreatingVault = false;
+    }
+}
+
+function toggleNewVaultPasswordVisibility() {
+    showNewVaultPassword = !showNewVaultPassword;
+}
 
     function openTauriWebsite() {
         openUrl("https://tauri.app/");
@@ -222,7 +256,7 @@
                 <h1>Выберите хранилище</h1>
                 <div class="header-buttons">
                     <button
-                        on:click={createNewVault}
+                        on:click={openCreateVaultModal}
                         class="add-btn"
                         title="Создать новое хранилище"
                         disabled={!hasVaultPath}
@@ -333,6 +367,72 @@
         <MainInterface {selectedFile} {password} onLogout={handleLogout} />
     {/if}
 
+    {#if showCreateVaultModal}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div class="modal-overlay" on:click={closeCreateVaultModal}>
+            <div class="modal-content" on:click|stopPropagation>
+                <div class="modal-header">
+                    <h2>Создать новое хранилище</h2>
+                    <button class="modal-close" on:click={closeCreateVaultModal}>×</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="new-vault-name">Имя хранилища</label>
+                        <input 
+                            id="new-vault-name"
+                            type="text"
+                            bind:value={newVaultName}
+                            placeholder="Моё главное хранилище"
+                            class="input-field"
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-vault-password">Пароль</label>
+                        <div class="password-wrapper">
+                            <input 
+                                id="new-vault-password"
+                                type={showNewVaultPassword ? "text" : "password"}
+                                bind:value={newVaultPassword}
+                                placeholder="••••••••••••••••"
+                                class="input-field"
+                            />
+                            <button 
+                                type="button"
+                                on:click={toggleNewVaultPasswordVisibility}
+                                class="toggle-password-btn"
+                                title={showNewVaultPassword ? "Скрыть пароль" : "Показать пароль"}
+                            >
+                                <img 
+                                    src={showNewVaultPassword ? HideIcon : ShowIcon} 
+                                    alt={showNewVaultPassword ? "Скрыть" : "Показать"} 
+                                    class="icon"
+                                />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="btn-secondary" on:click={closeCreateVaultModal}>Отмена</button>
+                    <button 
+                        on:click={handleCreateVault}
+                        class="btn-primary"
+                        disabled={isCreatingVault}
+                    >
+                        {#if isCreatingVault}
+                            <div class="spinner small-spinner"></div> Создание...
+                        {:else}
+                            Создать хранилище
+                        {/if}
+                    </button>
+                </div>
+            </div>
+        </div>
+    {/if}
+
 
 <style>
     .container {
@@ -400,6 +500,75 @@
         flex-direction: column;
         gap: 1.2rem;
         position: absolute; 
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: color-mix(in srgb, var(--ctp-crust) 60%, transparent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background-color: var(--ctp-mantle);
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 40px color-mix(in srgb, var(--ctp-crust) 30%, transparent);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--ctp-surface0);
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: var(--ctp-text);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--ctp-subtext1);
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-close:hover {
+        background-color: var(--ctp-surface0);
+        color: var(--ctp-text);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding: 1.5rem;
+        border-top: 1px solid var(--ctp-surface0);
     }
 
     .logos-container {
