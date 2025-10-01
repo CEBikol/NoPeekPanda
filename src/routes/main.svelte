@@ -19,6 +19,7 @@
     import { onMount } from "svelte";
 
     let error = "";
+    let copied = "";
     let newSite = "";
     let newLogin = "";
     let newPassword = "";
@@ -26,7 +27,6 @@
     let addingPassword = false;
     let services = [];
     let viewingPasswords = new Map();
-    let copyingStates = new Map();
     let isLoading = true;
     
     // Новые состояния для навигации и модальных окон
@@ -51,6 +51,18 @@
             error = "Не удалось загрузить список сервисов";
             isLoading = false;
         }
+    }
+
+    async function copySite(site) {
+        await copyToClipboard(site, 'Сайт');
+    }
+
+    async function copyLogin(login) {
+        await copyToClipboard(login, 'Логин');
+    }
+
+    function isLongText(text) {
+        return text.length > 20;
     }
 
     function switchSection(section) {
@@ -109,13 +121,15 @@
         }
     }
 
-    async function copyToClipboard(text, id) {
-        copyingStates.set(id, true);
-        setTimeout(() => copyingStates.delete(id), 2000);
-        copyingStates = new Map(copyingStates);
-        
+    async function copyToClipboard(text, type = '') {
         try {
             await navigator.clipboard.writeText(text);
+            if (type) {
+                copied = `${type} скопирован в буфер обмена`;
+            } else {
+                copied = 'Текст скопирован в буфер обмена';
+            }
+            setTimeout(() => copied = '', 3000);
         } catch (e) {
             error = "Ошибка копирования в буфер обмена";
             console.error("Ошибка копирования:", e);
@@ -203,6 +217,14 @@
         </div>
     {/if}
 
+    {#if copied}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div class="global-copied" on:click={() => copied = ''}>
+            {copied}
+        </div>
+    {/if}
+
     <div class="content-layout">
         <nav class="sidebar">
             <div class="nav-section">
@@ -276,8 +298,26 @@
                                         {service.site.charAt(0).toUpperCase()}
                                     </div>
                                     <div class="site-details">
-                                        <h3 class="site-name">{service.site}</h3>
-                                        <p class="login">{service.login}</p>
+                                        <!-- svelte-ignore a11y_click_events_have_key_events -->
+                                        <!-- svelte-ignore a11y_no_static_element_interactions -->
+                                        <div class="text-container site-name-container" 
+                                            class:long-text={isLongText(service.site)}
+                                            on:click={() => copySite(service.site)}>
+                                            <h3 class="site-name" title={service.site}>{service.site}</h3>
+                                            {#if isLongText(service.site)}
+                                                <div class="fade-overlay"></div>
+                                            {/if}
+                                        </div>
+                                        <!-- svelte-ignore a11y_click_events_have_key_events -->
+                                        <!-- svelte-ignore a11y_no_static_element_interactions -->
+                                        <div class="text-container login-container"
+                                            class:long-text={isLongText(service.login)}
+                                            on:click={() => copyLogin(service.login)}>
+                                            <p class="login" title={service.login}>{service.login}</p>
+                                            {#if isLongText(service.login)}
+                                                <div class="fade-overlay"></div>
+                                            {/if}
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="card-actions">
@@ -320,7 +360,7 @@
                                         
                                         {#if viewingPasswords.has(service.id) && !viewingPasswords.get(service.id).loading}
                                             <button 
-                                                on:click={() => copyToClipboard(viewingPasswords.get(service.id).password, service.id)}
+                                                on:click={() => copyToClipboard(viewingPasswords.get(service.id).password, 'Пароль')}
                                                 class="icon-btn copy-btn"
                                                 title="Скопировать пароль"
                                             >
@@ -691,6 +731,108 @@
         background-color: var(--ctp-surface0);
         border-bottom: 1px solid var(--ctp-surface1);
     }
+    
+
+    .text-container {
+        max-width: 100%;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+    }
+
+    .site-name-container, .login-container {
+        max-width: 180px;
+    }
+
+    .site-name, .login {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: all 0.4s ease;
+        display: block;
+        width: fit-content;
+        user-select: none;
+        -webkit-user-select: none;
+        min-width: 100%;
+    }
+
+    /* Плавная анимация прокрутки только для длинных текстов */
+    .text-container.long-text:hover .site-name,
+    .text-container.long-text:hover .login {
+        animation: smoothScroll 10s linear infinite;
+        text-overflow: unset;
+        cursor: pointer;
+    }
+
+    .fade-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 30px;
+        background: linear-gradient(
+            to right,
+            transparent,
+            var(--ctp-surface0) 95%
+        );
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.2s ease;
+        z-index: 2;
+    }
+
+        /* Скрываем градиент при наведении на контейнер */
+    .text-container.long-text:hover .fade-overlay {
+        opacity: 0;
+    }
+
+    /* На мобильных устройствах (где нет hover) — оставляем градиент видимым */
+    @media (hover: none) and (pointer: coarse) {
+        .fade-overlay {
+            opacity: 1 !important;
+        }
+        .text-container.long-text:hover .fade-overlay {
+            opacity: 1 !important;
+        }
+    }
+
+    /* Улучшенная плавная анимация прокрутки */
+    @keyframes smoothScroll {
+        0% {
+            transform: translateX(0);
+        }
+        5% {
+            transform: translateX(0);
+        }
+        45% {
+            transform: translateX(calc(-100% + 180px));
+        }
+        55% {
+            transform: translateX(calc(-100% + 180px));
+        }
+        95% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    /* Для мобильных устройств отключаем анимацию */
+    @media (max-width: 768px) {
+        .text-container.long-text:hover .site-name,
+        .text-container.long-text:hover .login {
+            animation: none;
+            white-space: normal;
+            overflow: visible;
+        }
+        
+        .site-name-container, .login-container {
+            max-width: none;
+        }
+    }
 
     .site-info {
         display: flex;
@@ -717,6 +859,7 @@
         flex-direction: column;
         min-width: 0;
         flex: 1;
+        gap: 0.25rem;
     }
 
     .site-name {
@@ -724,9 +867,6 @@
         font-size: 1.1rem;
         color: var(--ctp-text);
         font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .login {
@@ -734,9 +874,6 @@
         font-size: 0.9rem;
         color: var(--ctp-subtext1);
         font-weight: 400;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .card-actions {
@@ -1066,6 +1203,30 @@
         user-select: none;
     }
 
+    .global-copied {
+        position: fixed;
+        top: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: calc(100% - 2rem);
+        width: max-content;
+        padding: 0.75rem 1.5rem;
+        color: var(--ctp-green);
+        background-color: color-mix(in srgb, var(--ctp-green) 10%, transparent);
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border-left: 4px solid var(--ctp-green);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--ctp-crust) 10%, transparent);
+        animation: fadeIn 0.3s ease, slideDown 0.2s ease 0.3s forwards;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-align: center;
+        user-select: none;
+    }
+
     @keyframes fadeIn {
         from { 
             opacity: 0; 
@@ -1082,7 +1243,8 @@
         to { margin-top: 0; }
     }
 
-    .global-error:hover {
+    .global-error:hover,
+    .global-copied:hover {
         box-shadow: 0 6px 16px color-mix(in srgb, var(--ctp-crust) 30%, transparent);
         transform: translateX(-50%) scale(1.02);
     }
