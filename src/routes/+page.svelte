@@ -401,7 +401,7 @@ function toggleNewVaultPasswordVisibility() {
                             <button 
                                 type="button"
                                 on:click={toggleNewVaultPasswordVisibility}
-                                class="toggle-password-btn"
+                                class="toggle-btn"
                                 title={showNewVaultPassword ? "Скрыть пароль" : "Показать пароль"}
                             >
                                 <img 
@@ -821,6 +821,47 @@ function toggleNewVaultPasswordVisibility() {
 
     .action-btn:hover {
         background-color: var(--ctp-lavender);
+    }
+    .btn-primary {
+        padding: 0.75rem 1.5rem;
+        background-color: var(--ctp-blue);
+        color: var(--ctp-base);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background-color: var(--ctp-lavender);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        background-color: var(--ctp-surface0);
+        color: var(--ctp-text);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--ctp-surface1);
     }
 
     .logos {
