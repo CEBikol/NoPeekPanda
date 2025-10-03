@@ -470,22 +470,13 @@
 {/if}
 
 <style>
-    .main-interface {
-
-        margin: 0 !important;
-        padding: 0 !important;
-        min-height: 100vh !important;
-        box-sizing: border-box !important;
-        background-color: var(--ctp-base) !important;
-        display: block !important;
-        align-items: normal !important;
-        justify-content: normal !important;
-        
-
+   .main-interface {
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--ctp-base);
         color: var(--ctp-text);
-        padding: 0; 
-        max-width: none;
-        width: 100%;
     }
 
     .content-layout {
@@ -493,6 +484,7 @@
         flex: 1;
         overflow: hidden;
         width: 100%;
+        height: calc(100vh - 80px);
         height: calc(100vh - 80px);
     }
 

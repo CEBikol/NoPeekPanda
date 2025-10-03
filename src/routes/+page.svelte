@@ -10,6 +10,7 @@
     const CatppuccinIcon = "/icons/catppuccin-logo.png";
     const RustIcon = "/icons/rust-logo.png";
     const FlutIcon = "/icons/flaticon.png"
+    const ArrowDownIcon = "/icons/arrow-down-sign.png"
 
     import { invoke } from "@tauri-apps/api/core";
     import { onMount } from "svelte";
@@ -283,31 +284,29 @@ function toggleNewVaultPasswordVisibility() {
 
             <div class="form-group">
                 <div class="select-with-refresh">
-                    <select bind:value={selectedFile} class="input-field styled-select">
+                    <div class="select-wrapper">
+                    <select bind:value={selectedFile} class="input-field">
                         <option value="" disabled selected>Выберите хранилище</option>
                         {#each vaultFiles as file}
-                            <option value={file}>{file}</option>
+                        <option value={file}>{file}</option>
                         {/each}
                     </select>
+                    <img src={ArrowDownIcon} alt="" class="select-arrow icon" />
+                    </div>
                     <button
-                        on:click={loadVaultFiles}
-                        class="refresh-btn"
-                        title="Обновить список"
-                        disabled={isLoading}
+                    on:click={loadVaultFiles}
+                    class="refresh-btn"
+                    title="Обновить список"
+                    disabled={isLoading}
                     >
-                        {#if isLoading}
-                            <div class="spinner"></div>
-                        {:else}
-                            <img
-                                src={RefreshIcon}
-                                alt="Обновить"
-                                class="icon"
-                            />
-                        {/if}
+                    {#if isLoading}
+                        <div class="spinner"></div>
+                    {:else}
+                        <img src={RefreshIcon} alt="Обновить" class="icon" />
+                    {/if}
                     </button>
                 </div>
             </div>
-
             <div class="form-group">
                 <div class="password-wrapper">
                     <input
@@ -673,6 +672,52 @@ function toggleNewVaultPasswordVisibility() {
         flex: 1;
     }
 
+    .select-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        width: 100%;
+        }
+
+        /* Скрываем стандартную стрелку */
+        select.input-field {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+
+        /* Занимаем всё пространство */
+        width: 100%;
+        padding: flex;
+        padding-right: 32px; /* оставляем место для иконки */
+        background-color: var(--ctp-surface0);
+        color: var(--ctp-text);
+        border: 1px solid var(--ctp-overlay0);
+        border-radius: 6px;
+        outline: none;
+        cursor: pointer;
+        }
+
+        select.input-field:hover {
+        border-color: var(--ctp-overlay0);
+        }
+
+        select.input-field:focus {
+        border-color: var(--ctp-blue);
+        box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.2);
+        }
+
+        /* Иконка стрелки */
+        .select-arrow {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none; /* чтобы не мешала кликам по select */
+        width: 16px;
+        height: 16px;
+        /* Класс .icon уже должен задавать нужный цвет через filter или opacity */
+    }
+
     .refresh-btn {
         background: var(--ctp-surface0);
         border: 1px solid var(--ctp-overlay0);
@@ -729,10 +774,6 @@ function toggleNewVaultPasswordVisibility() {
     }
 
     select.input-field {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23cdd6f4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 1rem center;
-        background-size: 16px;
         padding-right: 2.5rem;
     }
 

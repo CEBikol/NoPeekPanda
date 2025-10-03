@@ -29,6 +29,64 @@
     --ctp-rosewater: #f5e0dc;
 }
 
+::-webkit-scrollbar {
+  width: 12px; /* ширина вертикального скроллбара */
+  height: 12px; /* высота горизонтального скроллбара */
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ctp-crust);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ctp-surface1);
+  border-radius: 6px;
+  border: 2px solid var(--ctp-crust);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ctp-surface2);
+}
+
+/* Для Firefox (ограниченная поддержка) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ctp-surface1) var(--ctp-crust);
+}
+
+select {
+  /* Сброс стандартного вида */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* Стили */
+  background-color: var(--ctp-surface0);
+  color: var(--ctp-text);
+  border: 1px solid var(--ctp-surface1);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: var(--ctp-overlay0);
+}
+
+select:focus {
+  border-color: var(--ctp-blue);
+  box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.2);
+}
+
+/* Опционально: стили для option (ограничены в поддержке) */
+select option {
+  background-color: var(--ctp-surface0);
+  color: var(--ctp-text);
+}
+
 /* Применяем шрифты и базовые стили ко всему приложению */
 * {
     box-sizing: border-box;
