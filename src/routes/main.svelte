@@ -11,6 +11,8 @@
     const SettingsIcon = "/icons/settings.png";
     const OtpIcon = "/icons/otp.png"
     const PasswordIcon = "/icons/password.png"
+    let showDeleteModal = false;
+    let serviceToDelete = null;
 
     export let selectedFile = "";
     export let onLogout = () => {};
@@ -169,28 +171,35 @@
         }
     }
 
-    async function deleteService(service) {
-        if (confirm("Вы уверены, что хотите удалить этот пароль?")) {
-            try {
-                await invoke("delete_password", { id: service.id });
-                
-                // Обновляем список сервисов
-                services = services.filter(s => s.id !== service.id);
-                
-                // Очищаем состояние просмотра пароля
-                if (viewingPasswords.has(service.id)) {
-                    const { timer } = viewingPasswords.get(service.id);
-                    clearTimeout(timer);
-                    viewingPasswords.delete(service.id);
-                    viewingPasswords = new Map(viewingPasswords);
-                }
-                
-                error = "";
-            } catch (e) {
-                error = "Не удалось удалить пароль";
-                console.error("Ошибка удаления пароля:", e);
+    function deleteService(service) {
+        serviceToDelete = service;
+        showDeleteModal = true;
+    }
+
+    async function confirmDelete() {
+        if (!serviceToDelete) return;
+        
+        try {
+            await invoke("delete_password", { id: serviceToDelete.id });
+            services = services.filter(s => s.id !== serviceToDelete.id);
+            
+            if (viewingPasswords.has(serviceToDelete.id)) {
+                const { timer } = viewingPasswords.get(serviceToDelete.id);
+                clearTimeout(timer);
+                viewingPasswords.delete(serviceToDelete.id);
             }
+            
+            error = "";
+            closeDeleteModal();
+        } catch (e) {
+            error = "Не удалось удалить пароль";
+            console.error("Ошибка удаления пароля:", e);
         }
+    }
+
+    function closeDeleteModal() {
+        showDeleteModal = false;
+        serviceToDelete = null;
     }
 
     function toggleNewPasswordVisibility() {
@@ -463,6 +472,45 @@
                     {:else}
                         Добавить пароль
                     {/if}
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
+
+{#if showDeleteModal}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+     <div class="modal-overlay" on:click={closeDeleteModal}>
+        <div class="modal-content" on:click|stopPropagation>
+            <div class="modal-header">
+                <h2>Подтверждение удаления</h2>
+                <button class="modal-close" on:click={closeDeleteModal}>×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div style="text-align: center; padding: 1.5rem 0;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--ctp-peach);">⚠️</div>
+                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">
+                        Вы уверены, что хотите удалить запись для 
+                        <strong style="color: var(--ctp-text);">{serviceToDelete?.site}</strong>?
+                    </p>
+                    <p style="color: var(--ctp-red); font-weight: 500; margin-top: 0.5rem;">
+                        Это действие нельзя отменить
+                    </p>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" on:click={closeDeleteModal}>
+                    Отмена
+                </button>
+                <button 
+                    on:click={confirmDelete} 
+                    class="btn-primary"
+                    style="background-color: var(--ctp-red);"
+                >
+                    Удалить
                 </button>
             </div>
         </div>
