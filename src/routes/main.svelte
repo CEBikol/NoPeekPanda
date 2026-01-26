@@ -138,6 +138,22 @@
         }
     }
 
+    async function copyPasswordDirect(service) {
+        try {
+            // Получаем пароль напрямую без отображения в UI
+            const passwordEntry = await invoke("get_password", { id: service.id });
+            
+            // Копируем в буфер обмена
+            await copyToClipboard(passwordEntry.password, 'Пароль');
+            
+            // Очищаем пароль из памяти сразу после использования
+            passwordEntry.password = '';
+        } catch (e) {
+            error = "Не удалось скопировать пароль";
+            console.error("Ошибка безопасного копирования:", e);
+        }
+    }
+
     async function addNewPassword() {
         if (!newSite || !newLogin || !newPassword) {
             error = "Все поля должны быть заполнены";
@@ -355,6 +371,16 @@
                                     </div>
                                     
                                     <div class="password-actions">
+                                        <!-- Кнопка безопасного копирования (всегда доступна) -->
+                                        <button 
+                                            on:click={() => copyPasswordDirect(service)}
+                                            class="icon-btn copy-btn"
+                                            title="Скопировать пароль (без отображения)"
+                                        >
+                                            <img src={CopyIcon} alt="Скопировать" class="icon" />
+                                        </button>
+                                        
+                                        <!-- Кнопка просмотра пароля -->
                                         <button 
                                             on:click={() => handlePasswordView(service)}
                                             class="icon-btn view-btn"
@@ -366,20 +392,6 @@
                                                 class="icon" 
                                             />
                                         </button>
-                                        
-                                        {#if viewingPasswords.has(service.id) && !viewingPasswords.get(service.id).loading}
-                                            <button 
-                                                on:click={() => copyToClipboard(viewingPasswords.get(service.id).password, 'Пароль')}
-                                                class="icon-btn copy-btn"
-                                                title="Скопировать пароль"
-                                            >
-                                                <img 
-                                                    src={CopyIcon} 
-                                                    alt="Копировать" 
-                                                    class="icon" 
-                                                />
-                                            </button>
-                                        {/if}
                                     </div>
                                 </div>
                             </div>
