@@ -3,6 +3,8 @@ use secrecy::SecretBox as Secret;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tauri::State;
+use tauri_plugin_updater::UpdaterExt;
+use serde::Serialize;
 
 mod db;
 //mod utils;
@@ -16,6 +18,11 @@ struct AppState {
     vault: Arc<Mutex<Option<Vault>>>,
 }
 
+#[derive(Serialize)]
+struct UpdateInfo {
+    version: String,
+    body: Option<String>,
+}
 /// Загружает текущие настройки приложения
 #[tauri::command]
 async fn get_settings() -> Result<settings::AppSettings, String> {
@@ -183,15 +190,66 @@ async fn get_password(
     }
 }
 /// Проверяет существование директории
-#[tauri::command]
-async fn check_directory_exists(path: String) -> Result<bool, String> {
-    Ok(std::path::Path::new(&path).exists())
-}
+// #[tauri::command]
+// async fn check_directory_exists(path: String) -> Result<bool, String> {
+//     Ok(std::path::Path::new(&path).exists())
+// }
 
 /// Создает директорию
+// #[tauri::command]
+// async fn create_directory(path: String) -> Result<(), String> {
+//     std::fs::create_dir_all(&path).map_err(|e| format!("Не удалось создать директорию: {}", e))
+// }
+
 #[tauri::command]
-async fn create_directory(path: String) -> Result<(), String> {
-    std::fs::create_dir_all(&path).map_err(|e| format!("Не удалось создать директорию: {}", e))
+async fn check_update(app: tauri::AppHandle) -> Result<Option<UpdateInfo>, String> {
+    let updater = app.updater()
+        .map_err(|e| format!("Не удалось инициализировать обновления: {}", e))?;
+    
+    match updater.check().await {
+        Ok(Some(update)) => Ok(Some(UpdateInfo {
+            version: update.version.clone(),
+            body: update.body.clone(),
+        })),
+        Ok(None) => Ok(None),
+        Err(e) => Err(format!("Ошибка проверки обновлений: {}", e)),
+    }
+}
+
+/// Устанавливает обновление
+#[tauri::command]
+async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
+    let updater = app.updater()
+        .map_err(|e| format!("Не удалось инициализировать обновления: {}", e))?;
+    
+    match updater.check().await {
+        Ok(Some(update)) => {
+            update
+                .download_and_install(
+                    |chunk_length, content_length| {
+                        println!("Скачано: {} из {:?}", chunk_length, content_length);
+                    },
+                    || {
+                        println!("Скачивание завершено");
+                    },
+                )
+                .await
+                .map_err(|e| format!("Ошибка установки: {}", e))?;
+            
+            #[cfg(not(target_os = "windows"))]
+            app.restart();
+            
+            Ok(())
+        }
+        Ok(None) => Err("Нет доступных обновлений".to_string()),
+        Err(e) => Err(format!("Ошибка проверки обновлений: {}", e)),
+    }
+}
+
+/// Возвращает тип операционной системы («windows», «linux», «macos»)
+#[tauri::command]
+async fn get_os() -> Result<String, String> {
+    Ok(std::env::consts::OS.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -211,6 +269,9 @@ pub fn run() {
             open_vault,
             close_vault,
             list_services,
+            check_update,
+            install_update,
+            get_os,
             get_password,
             add_password,
             delete_password

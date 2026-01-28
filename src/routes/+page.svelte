@@ -1,5 +1,5 @@
 <script>
-// @ts-nocheck
+    // @ts-nocheck
 
     const ShowIcon = "/icons/visible.png";
     const HideIcon = "/icons/hide.png";
